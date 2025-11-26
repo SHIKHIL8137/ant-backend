@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File
 import tempfile
 import os
 from services.docling_service import extract_text_from_doc
-from services.llm_service import call_gemini_api
+from services.llm_service import call_llm_api
 from core.logger import logger
 
 router = APIRouter()
@@ -21,10 +21,10 @@ async def extract_resume(file: UploadFile = File(...)):
         raw_text = extract_text_from_doc(path)
         logger.info(f"Successfully extracted text from: {file.filename}")
         
-        # Call the Gemini API to parse the resume data with privacy protection
-        llm_parsed_data = call_gemini_api(raw_text)
+        # Call the configured LLM API to parse the resume data with privacy protection
+        llm_parsed_data = call_llm_api(raw_text)
         
-        logger.info(f"Successfully parsed resume with Gemini API")
+        logger.info(f"Successfully parsed resume with configured LLM API")
 
         return {
             "status": True,

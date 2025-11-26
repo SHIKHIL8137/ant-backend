@@ -15,58 +15,60 @@ def call_gemini_api(text: str) -> dict:
     Returns:
         dict: Parsed resume data from Gemini
     """
-    # Get API key from environment variable
+    # Get API key and model from environment variables
     api_key = os.getenv("GEMINI_API_KEY")
+    model_name = os.getenv("LLM_MODEL", "models/gemini-2.5-flash")
+    
     if not api_key:
         raise Exception("GEMINI_API_KEY not found in environment variables")
     
     # Configure the Gemini API
     genai.configure(api_key=api_key)
     
-    logger.info("Using Google Gemini API")
+    logger.info(f"Using Google Gemini API with model: {model_name}")
     
     # Sanitize the text to remove PII
     sanitized_text = sanitize_resume_text(text)
     
     # Secure prompt that ensures privacy
     prompt = f"""
-You are a secure and privacy-focused resume parser.
+    You are a secure and privacy-focused resume parser.
 
-The following resume text has been PRE-CLEANED to REMOVE all personally
-identifiable information (PII) such as: name, email, phone number, 
-address, LinkedIn, GitHub, portfolio links, and any other user identifiers.
+    The following resume text has been PRE-CLEANED to REMOVE all personally
+    identifiable information (PII) such as: name, email, phone number, 
+    address, LinkedIn, GitHub, portfolio links, and any other user identifiers.
 
-Do NOT try to infer or guess personal details.
+    Do NOT try to infer or guess personal details.
 
-Your job is to extract ONLY professional and skill-based information 
-from this sanitized text and return it in STRICT JSON format.
+    Your job is to extract ONLY professional and skill-based information 
+    from this sanitized text and return it in STRICT JSON format.
 
-Expected JSON structure:
+    Expected JSON structure:
 
-{{
-  "skills": {{}},
-  "experience": [],
-  "professional_projects": [],
-  "additional_projects": [],
-  "education": [],
-  "achievements": [],
-  "languages": {{}}
-}}
+    {{
+    "skills": {{}},
+    "experience": [],
+    "professional_projects": [],
+    "additional_projects": [],
+    "education": [],
+    "achievements": [],
+    "languages": {{}}
+    }}
 
-Sanitized Resume Text (PII Removed):
-{sanitized_text}
+    Sanitized Resume Text (PII Removed):
+    {sanitized_text}
 
-Rules:
-- Do NOT add name, contact, or any personal information.
-- Do NOT hallucinate details that are not in the text.
-- Return ONLY valid JSON response with no additional text or markdown formatting.
-- If you cannot extract certain fields, leave them empty but maintain the structure.
-- Always return valid JSON, even if empty.
-"""
+    Rules:
+    - Do NOT add name, contact, or any personal information.
+    - Do NOT hallucinate details that are not in the text.
+    - Return ONLY valid JSON response with no additional text or markdown formatting.
+    - If you cannot extract certain fields, leave them empty but maintain the structure.
+    - Always return valid JSON, even if empty.
+    """
 
     try:
         # Initialize the Gemini model
-        model = genai.GenerativeModel('models/gemini-2.5-flash')
+        model = genai.GenerativeModel(model_name)
         
         # Generate content with specific generation config
         generation_config = {
@@ -112,10 +114,29 @@ Rules:
         raise Exception(f"Failed to call Gemini API: {str(e)}")
 
 
+def call_llm_api(text: str) -> dict:
+    """
+    Call the configured LLM API to parse resume data with privacy protection.
+    
+    Args:
+        text (str): Raw resume text (should be pre-sanitized)
+        
+    Returns:
+        dict: Parsed resume data from the configured LLM
+    """
+    # Get the LLM provider from environment variables
+    llm_provider = os.getenv("LLM_PROVIDER", "gemini").lower()
+    
+    if llm_provider == "gemini":
+        return call_gemini_api(text)
+    else:
+        raise Exception(f"Unsupported LLM provider: {llm_provider}")
+
+
 # Keep the old function name for backward compatibility
 def call_local_llm(text: str) -> dict:
     """
     Call local LLM to parse resume data with privacy protection.
-    Now uses Google Gemini API.
+    Now uses the configured LLM provider.
     """
-    return call_gemini_api(text)
+    return call_llm_api(text)
