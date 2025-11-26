@@ -29,7 +29,7 @@ file_handler = RotatingFileHandler(
     filename=log_file_path,
     maxBytes=10*1024*1024,  # 10MB
     backupCount=5,
-    encoding='utf-8'  # Specify UTF-8 encoding to handle unicode characters
+    encoding='utf-8'  
 )
 file_handler.setFormatter(formatter)
 
