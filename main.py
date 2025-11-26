@@ -15,18 +15,18 @@ PORT = int(os.getenv("PORT", 8000))
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # ---------------- STARTUP ----------------
-    logger.info("🚀 Starting Athena Backend...")
-    logger.info("📄 Initializing services...")
+    logger.info("Starting Athena Backend...")
+    logger.info("Initializing services...")
     # await redis.connect()  # example
-    logger.info("✨ Athena backend started successfully")
+    logger.info("Athena backend started successfully")
 
     yield  # FastAPI runs the application here
 
     # ---------------- SHUTDOWN ----------------
-    logger.info("🛑 Shutting down Athena Backend...")
+    logger.info("Shutting down Athena Backend...")
     # await redis.disconnect()  # example
-    logger.info("♻ Cleaning up resources...")
-    logger.info("👋 Server stopped gracefully")
+    logger.info("Cleaning up resources...")
+    logger.info("Server stopped gracefully")
 
 
 app = FastAPI(lifespan=lifespan)

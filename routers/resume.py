@@ -8,6 +8,7 @@ router = APIRouter()
 
 @router.post("/extract-resume")
 async def extract_resume(file: UploadFile = File(...)):
+    logger.info(f"Received resume extraction request for file: {file.filename}")
     suffix = os.path.splitext(file.filename)[1]
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -15,13 +16,20 @@ async def extract_resume(file: UploadFile = File(...)):
         path = tmp.name
 
     try:
+        logger.info(f"Processing file: {file.filename}")
         text = extract_text_from_doc(path)
+        logger.info(f"Successfully extracted text from: {file.filename}")
 
         return {
             "status": True,
             "text": text
         }
 
+    except Exception as e:
+        logger.error(f"Error processing file {file.filename}: {str(e)}")
+        raise
+
     finally:
         if os.path.exists(path):
             os.remove(path)
+            logger.debug(f"Cleaned up temporary file: {path}")
