@@ -3,6 +3,7 @@ import tempfile
 import os
 from services.docling_service import extract_text_from_doc
 from services.llm_service import call_llm_api
+from services.redis_service import redis_service
 from core.logger import logger
 
 router = APIRouter()
@@ -24,10 +25,14 @@ async def extract_resume(file: UploadFile = File(...)):
         # Call the configured LLM API to parse the resume data with privacy protection
         llm_parsed_data = call_llm_api(raw_text)
         
-        logger.info(f"Successfully parsed resume with configured LLM API")
+        # Create a session and store the parsed data in Redis
+        session_id = redis_service.create_session(llm_parsed_data)
+        
+        logger.info(f"Successfully parsed resume and created session with ID: {session_id}")
 
         return {
             "status": True,
+            "session_id": session_id,
             "professional_data": llm_parsed_data
         }
 

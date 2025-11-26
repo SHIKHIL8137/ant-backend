@@ -5,6 +5,7 @@ import uvicorn
 from contextlib import asynccontextmanager
 
 from routers.resume import router as resume_router
+from routers.session import router as session_router
 from core.error_handler import register_exception_handlers
 from core.logger import logger
 
@@ -33,7 +34,7 @@ app = FastAPI(lifespan=lifespan)
 
 register_exception_handlers(app)
 app.include_router(resume_router, prefix="/resume")
-
+app.include_router(session_router, prefix="/api")
 
 @app.get("/")
 async def root():
